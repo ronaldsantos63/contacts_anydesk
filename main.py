@@ -23,11 +23,13 @@ from PyQt5.QtWidgets import QStyledItemDelegate
 from PyQt5.QtWidgets import QStyleOptionViewItem
 from PyQt5.QtWidgets import QStyle
 from PyQt5.QtWidgets import QStyleOptionButton
+from PyQt5.QtWidgets import QComboBox
 
 # Gui
 from PyQt5.QtGui import QKeyEvent
 from PyQt5.QtGui import QPainter
 from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QValidator
 
 # Core
 from PyQt5.QtCore import QModelIndex
@@ -108,12 +110,14 @@ class NewContact(QDialog):
 
         anydesk_lbl = QLabel('Anydesk: ')
         self.anydesk_txt = QLineEdit()
+        self.anydesk_txt.setValidator(UpperCaseValidator(self))
 
         rootLayout.addWidget(anydesk_lbl, 0, 0)
         rootLayout.addWidget(self.anydesk_txt, 0, 1)
 
         name_lbl = QLabel('Nome: ')
         self.name_txt = QLineEdit()
+        self.name_txt.setValidator(UpperCaseValidator(self))
 
         rootLayout.addWidget(name_lbl, 1, 0)
         rootLayout.addWidget(self.name_txt, 1, 1)
@@ -264,10 +268,18 @@ class ButtonDelegate(QStyledItemDelegate):
             return super(ButtonDelegate, self).editorEvent(event, model, option, index)
 
 
+class UpperCaseValidator(QValidator):
+    def validate(self, text: str, pos: int):
+        return QValidator.Acceptable, text.upper(), pos
+
+
 class Window(QWidget):
     tbl_contacts: QTableView
     model: QSqlTableModel
     selectedIndex: QModelIndex = None
+    __searching: str = None
+    __selected_keywork: str = 'name'
+    __dict_keyword: dict
 
     def __init__(self) -> None:
         super().__init__()
@@ -293,8 +305,34 @@ class Window(QWidget):
         self.setWindowTitle('Lista de Contatos')
         self.model = QSqlTableModel()
 
-        self.setMinimumSize(600, 400)
-        hbox: QHBoxLayout = QHBoxLayout()
+        self.setMinimumSize(800, 400)
+        root_layout: QVBoxLayout = QVBoxLayout()
+
+        # search
+        hbox_search: QHBoxLayout = QHBoxLayout()
+        search_lbl: QLabel = QLabel('Buscar')
+
+        self.__dict_keyword = {'nome': 'name', 'anydesk': 'anydesk'}
+        keyword_cmb: QComboBox = QComboBox()
+        keyword_cmb.addItems(self.__dict_keyword.keys())
+        keyword_cmb.currentTextChanged.connect(self.__set_selected_keyword)
+
+        search_txt: QLineEdit = QLineEdit()
+        search_txt.setValidator(UpperCaseValidator(self))
+        search_txt.textChanged.connect(self.__update_searching)
+
+        search_btn: QPushButton = QPushButton('Buscar')
+        search_btn.clicked.connect(self.__search)
+
+        hbox_search.addWidget(search_lbl)
+        hbox_search.addWidget(keyword_cmb)
+        hbox_search.addWidget(search_txt)
+        hbox_search.addWidget(search_btn)
+
+        root_layout.addLayout(hbox_search)
+        # ./search
+
+        hbox_container: QHBoxLayout = QHBoxLayout()
 
         self.tbl_contacts = QTableView()
         button_delegate = ButtonDelegate()
@@ -319,7 +357,7 @@ class Window(QWidget):
         # events
         self.tbl_contacts.clicked.connect(self.__set_selected_row)
 
-        hbox.addWidget(self.tbl_contacts)
+        hbox_container.addWidget(self.tbl_contacts)
 
         vbox: QVBoxLayout = QVBoxLayout()
 
@@ -335,9 +373,11 @@ class Window(QWidget):
         vbox.addWidget(self.destroy_btn)
         vbox.addStretch(1)
 
-        hbox.addLayout(vbox)
+        hbox_container.addLayout(vbox)
 
-        self.setLayout(hbox)
+        root_layout.addLayout(hbox_container)
+
+        self.setLayout(root_layout)
         self.show()
 
     def __new(self):
@@ -381,11 +421,9 @@ class Window(QWidget):
             QProcess.Starting: 'ABRINDO',
             QProcess.Running: 'ACESSANDO'
         }
-        print(f'Process: {status[state]}')
         self.__update_action(row, status[state])
 
     def __on_click_button_delegate(self, row: int, column: int):
-        print(f'button_delegate - value1: {row} - value2: {column}')
         self.__access(row)
 
     def __update_action(self, row: int, message: str):
@@ -403,6 +441,21 @@ class Window(QWidget):
             QMessageBox.critical(
                 self, 'Erro',
                 f'Ocorreu um erro ao salvar!\nErro: {self.model.lastError().text()}')
+
+    def __update_searching(self, text: str):
+        self.__searching = text
+
+    def __set_selected_keyword(self, keyword: str):
+        self.__selected_keywork = self.__dict_keyword[keyword]
+
+    def __search(self):
+        if not self.__searching or self.__searching.strip() == '':
+            self.model.setFilter('')
+            # self.model.select()
+        else:
+            self.model.setFilter(
+                f"{self.__selected_keywork} like '{self.__searching}'")
+            # self.model.select()
 
 
 if __name__ == '__main__':
