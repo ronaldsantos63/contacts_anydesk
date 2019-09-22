@@ -1,0 +1,1 @@
+pipenv run pyinstaller -F -n contacts_anydesk -w -i logo.ico --add-data="logo.ico:logo.ico" main.py

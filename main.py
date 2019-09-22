@@ -1,4 +1,5 @@
 import sys
+import os
 from typing import Any, List, Union, Dict
 
 # Widgets
@@ -26,6 +27,7 @@ from PyQt5.QtWidgets import QStyleOptionButton
 # Gui
 from PyQt5.QtGui import QKeyEvent
 from PyQt5.QtGui import QPainter
+from PyQt5.QtGui import QIcon
 
 # Core
 from PyQt5.QtCore import QModelIndex
@@ -44,6 +46,14 @@ from PyQt5.QtSql import QSqlQuery
 from PyQt5.QtSql import QSqlError
 
 db: QSqlDatabase = None
+
+
+def resource_path(relative_path):
+    if hasattr(sys, '_MEIPASS'):
+        return os.path.join(sys._MEIPASS, relative_path)
+    if hasattr(sys, '_MEIPASS2'):
+        return os.path.join(sys._MEIPASS2, relative_path)
+    return os.path.join(os.path.abspath("."), relative_path)
 
 
 def connection() -> bool:
@@ -92,6 +102,7 @@ class NewContact(QDialog):
         self.anydesk_txt.selectAll()
 
     def __init_ui(self):
+        self.setWindowIcon(QIcon(resource_path("logo.ico")))
         self.setWindowTitle('Contato')
         rootLayout = QGridLayout()
 
@@ -252,36 +263,6 @@ class ButtonDelegate(QStyledItemDelegate):
             # for all other cases, default action will be fine
             return super(ButtonDelegate, self).editorEvent(event, model, option, index)
 
-    # def createEditor(self, widget: QWidget, option: QStyleOptionViewItem, index: QModelIndex):
-    #     detail: QPushButton = QPushButton('Detail', self)
-    #     detail.setText('Detail')
-    #     option()
-    #     index()
-    #     return detail
-
-    # def setEditorData(self, editor: QWidget, index: QModelIndex):
-    #     editor = QPushButton(editor)
-    #     editor.setProperty('Detail', 'Detail')
-    #     editor.setText('Detail')
-    #     index()
-
-    # def setModelData(self, editor: QWidget, model: QAbstractItemModel, index: QModelIndex):
-    #     detail = QPushButton(editor)
-    #     model.setData(index, detail.property('Detail'))
-
-    # def updateEditorGeometry(self, editor: QWidget, option: QStyleOptionViewItem, index: QModelIndex):
-    #     editor.setGeometry(option.rect)
-    #     index()
-
-    # def paint(self, painter: QPainter, option: QStyleOptionViewItem, index: QModelIndex):
-    #     button = QPushButton(index.data())
-    #     button.clicked.connect(self.clicked)
-    #     button.setGeometry(option.rect)
-    #     painter.save()
-    #     painter.translate(option.rect.topLeft())
-    #     button.render(painter)
-    #     painter.restore()
-
 
 class Window(QWidget):
     tbl_contacts: QTableView
@@ -308,6 +289,7 @@ class Window(QWidget):
         self.tbl_contacts.setColumnHidden(0, True)
 
     def __init_ui(self) -> None:
+        self.setWindowIcon(QIcon(resource_path("logo.ico")))
         self.setWindowTitle('Lista de Contatos')
         self.model = QSqlTableModel()
 
