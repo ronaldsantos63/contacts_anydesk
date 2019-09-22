@@ -10,8 +10,8 @@ this program was created to store the id list of anydesk remote access program a
   - [Install Dependencies](#install-dependencies)
   - [Run Program](#run-program)
 - [Make Executable](#make-executable)
-  - [Make Executable Linux](#linux)
-  - [Make Executable Windows](#windows)
+  - [Linux](#linux)
+  - [Windows](#windows)
 
 ## Prerequisites
 
