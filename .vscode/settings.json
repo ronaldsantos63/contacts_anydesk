@@ -1,0 +1,14 @@
+{
+    "python.pythonPath": "/home/ronald/.local/share/virtualenvs/anydesk_ids-LhMFzTcL/bin/python",
+    "sqltools.useNodeRuntime": true,
+    "sqltools.connections": [
+        {
+            "askForPassword": true,
+            "database": "./database.db",
+            "dialect": "SQLite",
+            "isActive": false,
+            "isConnected": false,
+            "name": "anydesk_database"
+        }
+    ]
+}
