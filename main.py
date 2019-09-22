@@ -77,6 +77,11 @@ def create_table_contacts() -> bool:
                       "action varchar(10) DEFAULT 'ACESSAR', anydesk varchar(10) not null, name varchar(200) not null)")
 
 
+def add_uniq_constraint_col_anydesk() -> bool:
+    _cmd = QSqlQuery(db)
+    return _cmd.exec_("CREATE UNIQUE INDEX anydesk_unique_index ON contacts(anydesk);")
+
+
 class NewContact(QDialog):
     __model: QSqlTableModel
     __record: QSqlRecord = None
@@ -169,9 +174,14 @@ class NewContact(QDialog):
                 if self.__model.insertRecord(-1, self.__record):
                     if not self.__model.submitAll():
                         self.__model.revertAll()
-                        QMessageBox.critical(
-                            self, 'Erro',
-                            f'Ocorreu um erro ao salvar!\nErro: {self.__model.lastError().text()}')
+                        if 'unique' in self.__model.lastError().text().lower():
+                            QMessageBox.critical(
+                                self, 'Erro',
+                                f'Já existe um contato com esse id cadastrado!')
+                        else:
+                            QMessageBox.critical(
+                                self, 'Erro',
+                                f'Ocorreu um erro ao salvar!\nErro: {self.__model.lastError().text()}')
                         return
                     # db.commit()
                     QMessageBox.information(
@@ -285,6 +295,8 @@ class Window(QWidget):
         super().__init__()
         print(f'connect to datase: {connection()}')
         print(f'create table contacts: {create_table_contacts()}')
+        print(
+            f'create anydesk_uniq_index: {add_uniq_constraint_col_anydesk()}')
         self.__init_ui()
         self.__initialize_model()
 
