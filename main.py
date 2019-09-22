@@ -320,6 +320,7 @@ class Window(QWidget):
         search_txt: QLineEdit = QLineEdit()
         search_txt.setValidator(UpperCaseValidator(self))
         search_txt.textChanged.connect(self.__update_searching)
+        search_txt.returnPressed.connect(self.__search)
 
         search_btn: QPushButton = QPushButton('Buscar')
         search_btn.clicked.connect(self.__search)
