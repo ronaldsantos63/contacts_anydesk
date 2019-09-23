@@ -24,6 +24,7 @@ from PyQt5.QtWidgets import QStyleOptionViewItem
 from PyQt5.QtWidgets import QStyle
 from PyQt5.QtWidgets import QStyleOptionButton
 from PyQt5.QtWidgets import QComboBox
+from PyQt5.QtWidgets import qApp
 
 # Gui
 from PyQt5.QtGui import QKeyEvent
@@ -313,6 +314,7 @@ class Window(QWidget):
         self.tbl_contacts.setColumnHidden(0, True)
 
     def __init_ui(self) -> None:
+        qApp.setStyle('Fusion')
         self.setWindowIcon(QIcon(resource_path("logo.ico")))
         self.setWindowTitle('Lista de Contatos')
         self.model = QSqlTableModel()
